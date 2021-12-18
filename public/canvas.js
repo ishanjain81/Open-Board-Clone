@@ -33,22 +33,36 @@ tool.lineWidth = penWidth;
 
 canvas.addEventListener("mousedown",(e)=>{
     mouseDown = true;
-    beginPath({
+    // beginPath({
+    //     x: e.clientX,
+    //     y: e.clientY,
+    //     color: eraserFlag ? eraserColor : penColor,
+    //     width: eraserFlag ? eraserWidth : penWidth
+    // });
+    let data = {
         x: e.clientX,
         y: e.clientY,
         color: eraserFlag ? eraserColor : penColor,
         width: eraserFlag ? eraserWidth : penWidth
-    });
+    }
+    socket.emit("beginPath",data);
 });
 
 canvas.addEventListener("mousemove",(e)=>{
     if(mouseDown){
-        drawStroke({
+        let data = {
             x: e.clientX,
             y: e.clientY,
             color: eraserFlag ? eraserColor : penColor,
             width: eraserFlag ? eraserWidth : penWidth
-        });
+        }
+        socket.emit("drawStroke",data);
+        // drawStroke({
+        //     x: e.clientX,
+        //     y: e.clientY,
+        //     color: eraserFlag ? eraserColor : penColor,
+        //     width: eraserFlag ? eraserWidth : penWidth
+        // });
     }
 });
 
@@ -68,11 +82,12 @@ undo.addEventListener("click",(e)=>{
     else{
         return;
     }
-    let trackObj = {
+    let data = {
         trackValue: track,
         undoRedoTracker: undoRedoTracker
     };
-    undoRedoCanvas(trackObj);
+    // undoRedoCanvas(trackObj);
+    socket.emit("redoUndo",data);
 
 });
 
@@ -83,12 +98,12 @@ redo.addEventListener("click",(e)=>{
     else{
         return;
     }
-    let trackObj = {
+    let data = {
         trackValue: track,
         undoRedoTracker: undoRedoTracker
     };
-    undoRedoCanvas(trackObj);
-
+    // undoRedoCanvas(trackObj);
+    socket.emit("redoUndo",data);
 });
 
 function undoRedoCanvas(trackObj){
@@ -150,4 +165,17 @@ download.addEventListener("click",(e)=>{
     a.href = url;
     a.download = "board.jpg";
     a.click();
+});
+
+socket.on("beginPath",(data)=>{
+    // data -> data from server 
+    beginPath(data);
+});
+
+socket.on("drawStroke",(data)=>{
+    drawStroke(data);
+});
+
+socket.on("redoUndo",(data)=>{
+    undoRedoCanvas(data);
 });
